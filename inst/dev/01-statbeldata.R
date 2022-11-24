@@ -87,12 +87,16 @@ dta$TX_PROV_DESCR_FR[dta$TX_RGN_DESCR_NL == "Brussels Hoofdstedelijk Gewest"] <-
 dta$CD_PROV_REFNIS[dta$TX_RGN_DESCR_NL == "Brussels Hoofdstedelijk Gewest"] <- 4000
 
 ## check munty
+sum(is.na(dta$TX_MUNTY_DESCR_NL))
+# dta$CD_MUNTY_REFNIS <- coalesce(dta$CD_MUNTY_REFNIS, dta$CD_REFNIS)
+# dta$TX_MUNTY_DESCR_NL <- coalesce(dta$TX_MUNTY_DESCR_NL, dta$TX_DESCR_NL)
+# dta$TX_MUNTY_DESCR_FR <- coalesce(dta$TX_MUNTY_DESCR_FR, dta$TX_DESCR_FR)
 unique(dta$TX_MUNTY_DESCR_NL)
 which(is.na(dta$TX_MUNTY_DESCR_NL)) ## some are NA (replace by "Unknown")
 which(is.na(dta$CD_MUNTY_REFNIS)) ## some are NA (replace by 99999)
-dta$CD_MUNTY_REFNIS[is.na(dta$CD_MUNTY_REFNIS)] <- 99999
-dta$TX_MUNTY_DESCR_NL[is.na(dta$TX_MUNTY_DESCR_NL)] <- "Unknown"
-dta$TX_MUNTY_DESCR_FR[is.na(dta$TX_MUNTY_DESCR_FR)] <- "Unknown"
+# dta$CD_MUNTY_REFNIS[is.na(dta$CD_MUNTY_REFNIS)] <- 99999
+# dta$TX_MUNTY_DESCR_NL[is.na(dta$TX_MUNTY_DESCR_NL)] <- "Unknown"
+# dta$TX_MUNTY_DESCR_FR[is.na(dta$TX_MUNTY_DESCR_FR)] <- "Unknown"
 
 ## merge CD_REFNIS and CD_MUNTY_REFNIS
 dta$CD_MUNTY_REFNIS <-
@@ -328,6 +332,41 @@ prov$AGE10 <- "ALL"
 BE_POP_PROV <- bind_rows(prov, prov_age, prov_age_sex, prov_sex)
 
 ## .. RGN
+rgn_age_sex <- aggregate(
+  data = dta,
+  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX + AGE + AGE5 + AGE10,
+  FUN = sum
+)
+
+rgn_age <- aggregate(
+  data = dta,
+  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + AGE + AGE5 + AGE10,
+  FUN = sum
+)
+rgn_age$SEX <- "MF"
+
+rgn_sex <- aggregate(
+  data = dta,
+  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX,
+  FUN = sum
+)
+rgn_sex$AGE <- "ALL"
+rgn_sex$AGE5 <- "ALL"
+rgn_sex$AGE10 <- "ALL"
+
+rgn <- aggregate(
+  data = dta,
+  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  FUN = sum
+)
+rgn$SEX <- "MF"
+rgn$AGE <- "ALL"
+rgn$AGE5 <- "ALL"
+rgn$AGE10 <- "ALL"
+
+BE_POP_RGN <- bind_rows(rgn, rgn_age, rgn_age_sex, rgn_sex)
+
+## .. COMMUNITIES (NEEDS TO BE UPDATED!!)
 rgn_age_sex <- aggregate(
   data = dta,
   POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX + AGE + AGE5 + AGE10,
