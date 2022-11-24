@@ -105,4 +105,7 @@ FPB <- pblapply(ARROND , function(x){rio::import(urlBureau,which = x)})
 # FPB <- readRDS('data/FPB.Rds')
 # format each arrondissemrnt
 FPB <- lapply(seq_along(FPB),function(x){formatFPB(FPB[[x]])})
-names(FPB)<- arrs
+names(FPB)<- ARROND
+
+saveRDS(FPB,"inst/extdata/FPB.RDS")
+saveRDS(ARROND,"inst/extdata/ARROND.RDS")
