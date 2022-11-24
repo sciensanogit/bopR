@@ -48,6 +48,36 @@
 #' }
 NULL
 
+
+#' @name FPB
+#' @title Population projection for Belgium
+#' @description Population projection for Belgium by ages and sex
+#'
+#' @docType data
+#' @source \url{https://www.plan.be/databases/data-35-en-population_projections_2021_2070}
+#' @references \url{https://www.plan.be/databases/data-35-en-population_projections_2021_2070}
+#' @examples
+#' \dontrun{
+#' data(BE_POP_MUNTY)
+#' class(BE_POP_MUNTY)
+#' str(BE_POP_MUNTY)
+#' }
+NULL
+
+#' @name ARROND
+#' @title Belgian arrondissmeents
+#' @description Vector with the names of the Belgian arrondissement
+#'
+#' @docType data
+#' @source \url{https://www.plan.be/databases/data-35-en-population_projections_2021_2070}
+#' @references \url{https://www.plan.be/databases/data-35-en-population_projections_2021_2070}
+#' @examples
+#' \dontrun{
+#' data(BE_POP_MUNTY)
+#' class(BE_POP_MUNTY)
+#' str(BE_POP_MUNTY)
+
+
 #' @name BE_POP_SECTOR
 #' @aliases
 #' @title Population datasets by location at the level of the statistical sector within Belgium extracted from Open Data at Statistics Belgium.
@@ -82,10 +112,11 @@ NULL
 #' data(BE_POP_SECTOR)
 #' class(BE_POP_SECTOR)
 #' str(BE_POP_SECTOR)
+#' data(BE_POP_SECTOR)
+#' class(BE_POP_SECTOR)
+#' str(BE_POP_SECTOR)
 #' }
 NULL
-
-
 
 
 
