@@ -60,6 +60,9 @@ for (fzip in ls) {
 ## save the combined result
 saveRDS(object = dta, file = "inst/extdata/statbel_data_combined.RDS")
 
+## load prepared data
+dta <- readRDS("inst/extdata/statbel_data_combined.RDS")
+
 ## check the dta
 str(dta)
 unique(dta$CD_YEAR)
