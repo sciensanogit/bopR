@@ -367,39 +367,46 @@ rgn$AGE10 <- "ALL"
 BE_POP_RGN <- bind_rows(rgn, rgn_age, rgn_age_sex, rgn_sex)
 
 ## .. COMMUNITIES (NEEDS TO BE UPDATED!!)
-rgn_age_sex <- aggregate(
+dta$COMTY_REFNIS <- dta$RGN_REFNIS
+dta$COMTY_REFNIS[dta$MUNTY_REFNIS %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 99999
+dta$COMTY_DESCR_NL <- dta$RGN_DESCR_NL
+dta$COMTY_DESCR_NL[dta$MUNTY_DESCR_NL %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 'Duitstalige Gemeenschap'
+dta$COMTY_DESCR_FR <- dta$RGN_DESCR_FR
+dta$COMTY_DESCR_FR[dta$MUNTY_DESCR_FR %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 'Communauté germanophone'
+
+COMTY_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR + SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
-rgn_age <- aggregate(
+COMTY_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + COMTY_REFNIS + RGN_DESCR_NL + COMTY_DESCR_FR + AGE + AGE5 + AGE10,
   FUN = sum
 )
-rgn_age$SEX <- "MF"
+COMTY_age$SEX <- "MF"
 
-rgn_sex <- aggregate(
+COMTY_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX,
+  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR + SEX,
   FUN = sum
 )
-rgn_sex$AGE <- "ALL"
-rgn_sex$AGE5 <- "ALL"
-rgn_sex$AGE10 <- "ALL"
+COMTY_sex$AGE <- "ALL"
+COMTY_sex$AGE5 <- "ALL"
+COMTY_sex$AGE10 <- "ALL"
 
-rgn <- aggregate(
+COMTY <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR,
   FUN = sum
 )
-rgn$SEX <- "MF"
-rgn$AGE <- "ALL"
-rgn$AGE5 <- "ALL"
-rgn$AGE10 <- "ALL"
+COMTY$SEX <- "MF"
+COMTY$AGE <- "ALL"
+COMTY$AGE5 <- "ALL"
+COMTY$AGE10 <- "ALL"
 
-BE_POP_RGN <- bind_rows(rgn, rgn_age, rgn_age_sex, rgn_sex)
+BE_POP_COMTY <- bind_rows(COMTY, COMTY_age, COMTY_age_sex, COMTY_sex)
 
 ## .. BEL
 be_age_sex <- aggregate(
@@ -436,170 +443,170 @@ be$AGE10 <- "ALL"
 
 BE_POP <- bind_rows(be, be_age, be_age_sex, be_sex)
 
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## PROJECTIONS ####
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## .. READ DATA ####
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## read-in and extract data
-ls <-
-  list.files(path = "inst/extdata/",
-             pattern = ".xlsx",
-             full.names = TRUE)
-dta <- list()
-i <- 1
-
-for (fxlsx in ls) {
-  print(paste0(i, "/", length(ls)))
-  ## read in the data
-  ftmp <- list()
-  ftmp$wd <- openxlsx::loadWorkbook(fxlsx)
-  ftmp$sheets <- openxlsx::sheets(ftmp$wd)[-1]
-  ftmp$dta <- tibble()
-
-  ## loop over different sheets
-  for (sh in seq_along(ftmp$sheets)) {
-    ftmp$xlsx <-
-      openxlsx::read.xlsx(
-        xlsxFile = ftmp$wd,
-        sheet = ftmp$sheets[sh],
-        startRow = 4,
-        colNames = TRUE
-      )
-    ## delete NA rows at column2 and column1
-    id <- is.na(ftmp$xlsx[,2]) | is.na(ftmp$xlsx[,1])
-    ## remove these rows
-    ftmp$xlsx <- ftmp$xlsx[!id,]
-    ## check uniques in age and add sex
-    colnames(ftmp$xlsx)[1] <- "AGE"
-    ftmp$xlsx$AGE <- as.numeric(gsub(pattern = " jaar| jaar en meer", replacement = "", x = ftmp$xlsx$AGE))
-
-    ftmp$xlsx$SEX <- rep(c("MF", "M", "F"), each = length(unique(ftmp$xlsx$AGE)))
-    ## add region
-    ftmp$xlsx$REGION <- ftmp$sheets[sh]
-    ## pivot_longer
-    ftmp$xlsx <- pivot_longer(ftmp$xlsx, cols = c(-SEX, -AGE, -REGION), names_to = "YEAR", values_to = "POPULATION")
-    ## add agegroups
-    ## .. .. 5-year age band
-    age <-
-      c("<1", "1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
-        "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69",
-        "70-74", "75-79", "80-84", "85-89", "90-94", "95+")
-    agei <- c(0, 1, seq(5, 95, 5), Inf)
-    ftmp$xlsx$AGE5 <- cut(ftmp$xlsx$AGE, breaks = agei, labels = age, include.lowest = TRUE, right = FALSE)
-
-    ## .. .. 10-year age band
-    age <-
-      c("<10", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79",
-        "80-89", "90+")
-    agei <- c(0, seq(10, 90, 10), Inf)
-    ftmp$xlsx$AGE10 <- cut(ftmp$xlsx$AGE, breaks = agei, labels = age, include.lowest = TRUE, right = FALSE)
-    ## merge dataset
-    ftmp$dta <- bind_rows(ftmp$dta, ftmp$xlsx)
-  }
-
-  ## save dta
-  dta[[i]] <- ftmp$dta
-  ## remove file
-  rm(ftmp)
-  ## add +1
-  i <- i + 1
-}
-
-## check the dta
-str(dta)
-head(dta[[1]])
-head(dta[[2]])
-head(dta[[3]])
-head(dta[[4]])
-
-## translate of non-ASCII characters
-dta[[1]]$REGION <-
-  stringi::stri_trans_general(dta[[1]]$REGION, "latin-ascii")
-dta[[2]]$REGION <-
-  stringi::stri_trans_general(dta[[2]]$REGION, "latin-ascii")
-dta[[3]]$REGION <-
-  stringi::stri_trans_general(dta[[3]]$REGION, "latin-ascii")
-dta[[4]]$REGION <-
-  stringi::stri_trans_general(dta[[4]]$REGION, "latin-ascii")
-
-## add abbrevation for region
-unique(dta[[1]]$REGION)
-unique(dta[[2]]$REGION)
-unique(dta[[3]]$REGION)
-unique(dta[[4]]$REGION)
-
-dta[[4]]$REGION <- factor(dta[[4]]$REGION,
-                       c("Brussels Hoofdstedelijk Gewest",
-                         "Vlaams Gewest",
-                         "Waals Gewest incl. Duitst. Gem."),
-                       c("BR", "FL", "WA"))
-
-dta[[2]]$REGION <- factor(dta[[2]]$REGION,
-                          c("Belgie"),
-                          c("BE"))
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## .. AGGREGATE DATA ####
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-## calculate summaries
-## .. ARRD
-arrd_age <- dta[[1]]
-arrd_age$AGE <- as.character(arrd_age$AGE)
-arrd_sex <- aggregate(
-  data = arrd_age,
-  POPULATION ~ YEAR + REGION + SEX,
-  FUN = sum
-)
-arrd_sex$AGE <- "ALL"
-arrd_sex$AGE5 <- "ALL"
-arrd_sex$AGE10 <- "ALL"
-
-BE_POP_PROJ_ARRD <- bind_rows(arrd_age, arrd_sex)
-
-## .. PROV
-prov_age <- dta[[3]]
-prov_age$AGE <- as.character(prov_age$AGE)
-prov_sex <- aggregate(
-  data = prov_age,
-  POPULATION ~ YEAR + REGION + SEX,
-  FUN = sum
-)
-prov_sex$AGE <- "ALL"
-prov_sex$AGE5 <- "ALL"
-prov_sex$AGE10 <- "ALL"
-
-BE_POP_PROJ_PROV <- bind_rows(prov_age, prov_sex)
-
-## .. RGN
-rgn_age <- dta[[4]]
-rgn_age$AGE <- as.character(rgn_age$AGE)
-rgn_sex <- aggregate(
-  data = rgn_age,
-  POPULATION ~ YEAR + REGION + SEX,
-  FUN = sum
-)
-rgn_sex$AGE <- "ALL"
-rgn_sex$AGE5 <- "ALL"
-rgn_sex$AGE10 <- "ALL"
-
-BE_POP_PROJ_RGN <- bind_rows(rgn_age, rgn_sex)
-
-## .. BEL
-be_age <- dta[[2]]
-be_age$AGE <- as.character(be_age$AGE)
-be_sex <- aggregate(
-  data = be_age,
-  POPULATION ~ YEAR + REGION + SEX,
-  FUN = sum
-)
-be_sex$AGE <- "ALL"
-be_sex$AGE5 <- "ALL"
-be_sex$AGE10 <- "ALL"
-
-BE_POP_PROJ <- bind_rows(be_age, be_sex)
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ## PROJECTIONS ####
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ## .. READ DATA ####
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ## read-in and extract data
+# ls <-
+#   list.files(path = "inst/extdata/",
+#              pattern = ".xlsx",
+#              full.names = TRUE)
+# dta <- list()
+# i <- 1
+#
+# for (fxlsx in ls) {
+#   print(paste0(i, "/", length(ls)))
+#   ## read in the data
+#   ftmp <- list()
+#   ftmp$wd <- openxlsx::loadWorkbook(fxlsx)
+#   ftmp$sheets <- openxlsx::sheets(ftmp$wd)[-1]
+#   ftmp$dta <- tibble()
+#
+#   ## loop over different sheets
+#   for (sh in seq_along(ftmp$sheets)) {
+#     ftmp$xlsx <-
+#       openxlsx::read.xlsx(
+#         xlsxFile = ftmp$wd,
+#         sheet = ftmp$sheets[sh],
+#         startRow = 4,
+#         colNames = TRUE
+#       )
+#     ## delete NA rows at column2 and column1
+#     id <- is.na(ftmp$xlsx[,2]) | is.na(ftmp$xlsx[,1])
+#     ## remove these rows
+#     ftmp$xlsx <- ftmp$xlsx[!id,]
+#     ## check uniques in age and add sex
+#     colnames(ftmp$xlsx)[1] <- "AGE"
+#     ftmp$xlsx$AGE <- as.numeric(gsub(pattern = " jaar| jaar en meer", replacement = "", x = ftmp$xlsx$AGE))
+#
+#     ftmp$xlsx$SEX <- rep(c("MF", "M", "F"), each = length(unique(ftmp$xlsx$AGE)))
+#     ## add region
+#     ftmp$xlsx$REGION <- ftmp$sheets[sh]
+#     ## pivot_longer
+#     ftmp$xlsx <- pivot_longer(ftmp$xlsx, cols = c(-SEX, -AGE, -REGION), names_to = "YEAR", values_to = "POPULATION")
+#     ## add agegroups
+#     ## .. .. 5-year age band
+#     age <-
+#       c("<1", "1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
+#         "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69",
+#         "70-74", "75-79", "80-84", "85-89", "90-94", "95+")
+#     agei <- c(0, 1, seq(5, 95, 5), Inf)
+#     ftmp$xlsx$AGE5 <- cut(ftmp$xlsx$AGE, breaks = agei, labels = age, include.lowest = TRUE, right = FALSE)
+#
+#     ## .. .. 10-year age band
+#     age <-
+#       c("<10", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79",
+#         "80-89", "90+")
+#     agei <- c(0, seq(10, 90, 10), Inf)
+#     ftmp$xlsx$AGE10 <- cut(ftmp$xlsx$AGE, breaks = agei, labels = age, include.lowest = TRUE, right = FALSE)
+#     ## merge dataset
+#     ftmp$dta <- bind_rows(ftmp$dta, ftmp$xlsx)
+#   }
+#
+#   ## save dta
+#   dta[[i]] <- ftmp$dta
+#   ## remove file
+#   rm(ftmp)
+#   ## add +1
+#   i <- i + 1
+# }
+#
+# ## check the dta
+# str(dta)
+# head(dta[[1]])
+# head(dta[[2]])
+# head(dta[[3]])
+# head(dta[[4]])
+#
+# ## translate of non-ASCII characters
+# dta[[1]]$REGION <-
+#   stringi::stri_trans_general(dta[[1]]$REGION, "latin-ascii")
+# dta[[2]]$REGION <-
+#   stringi::stri_trans_general(dta[[2]]$REGION, "latin-ascii")
+# dta[[3]]$REGION <-
+#   stringi::stri_trans_general(dta[[3]]$REGION, "latin-ascii")
+# dta[[4]]$REGION <-
+#   stringi::stri_trans_general(dta[[4]]$REGION, "latin-ascii")
+#
+# ## add abbrevation for region
+# unique(dta[[1]]$REGION)
+# unique(dta[[2]]$REGION)
+# unique(dta[[3]]$REGION)
+# unique(dta[[4]]$REGION)
+#
+# dta[[4]]$REGION <- factor(dta[[4]]$REGION,
+#                        c("Brussels Hoofdstedelijk Gewest",
+#                          "Vlaams Gewest",
+#                          "Waals Gewest incl. Duitst. Gem."),
+#                        c("BR", "FL", "WA"))
+#
+# dta[[2]]$REGION <- factor(dta[[2]]$REGION,
+#                           c("Belgie"),
+#                           c("BE"))
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ## .. AGGREGATE DATA ####
+# ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ## calculate summaries
+# ## .. ARRD
+# arrd_age <- dta[[1]]
+# arrd_age$AGE <- as.character(arrd_age$AGE)
+# arrd_sex <- aggregate(
+#   data = arrd_age,
+#   POPULATION ~ YEAR + REGION + SEX,
+#   FUN = sum
+# )
+# arrd_sex$AGE <- "ALL"
+# arrd_sex$AGE5 <- "ALL"
+# arrd_sex$AGE10 <- "ALL"
+#
+# BE_POP_PROJ_ARRD <- bind_rows(arrd_age, arrd_sex)
+#
+# ## .. PROV
+# prov_age <- dta[[3]]
+# prov_age$AGE <- as.character(prov_age$AGE)
+# prov_sex <- aggregate(
+#   data = prov_age,
+#   POPULATION ~ YEAR + REGION + SEX,
+#   FUN = sum
+# )
+# prov_sex$AGE <- "ALL"
+# prov_sex$AGE5 <- "ALL"
+# prov_sex$AGE10 <- "ALL"
+#
+# BE_POP_PROJ_PROV <- bind_rows(prov_age, prov_sex)
+#
+# ## .. RGN
+# rgn_age <- dta[[4]]
+# rgn_age$AGE <- as.character(rgn_age$AGE)
+# rgn_sex <- aggregate(
+#   data = rgn_age,
+#   POPULATION ~ YEAR + REGION + SEX,
+#   FUN = sum
+# )
+# rgn_sex$AGE <- "ALL"
+# rgn_sex$AGE5 <- "ALL"
+# rgn_sex$AGE10 <- "ALL"
+#
+# BE_POP_PROJ_RGN <- bind_rows(rgn_age, rgn_sex)
+#
+# ## .. BEL
+# be_age <- dta[[2]]
+# be_age$AGE <- as.character(be_age$AGE)
+# be_sex <- aggregate(
+#   data = be_age,
+#   POPULATION ~ YEAR + REGION + SEX,
+#   FUN = sum
+# )
+# be_sex$AGE <- "ALL"
+# be_sex$AGE5 <- "ALL"
+# be_sex$AGE10 <- "ALL"
+#
+# BE_POP_PROJ <- bind_rows(be_age, be_sex)
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## SAVE DATA ####
@@ -609,6 +616,14 @@ aggregate(be, POPULATION ~ YEAR, FUN = sum) # reference
 aggregate(munty, POPULATION ~ YEAR, FUN = sum)
 aggregate(prov, POPULATION ~ YEAR, FUN = sum)
 aggregate(rgn, POPULATION ~ YEAR, FUN = sum)
-subset(BE_POP_PROJ, subset = SEX == "MF" & AGE == "ALL", select = c("YEAR", "POPULATION"))
+aggregate(COMTY, POPULATION ~ YEAR, FUN = sum)
+#subset(BE_POP_PROJ, subset = SEX == "MF" & AGE == "ALL", select = c("YEAR", "POPULATION"))
+
+saveRDS(be, "inst/extdata/statbel_population_belgium.RDS")
+saveRDS(munty, "inst/extdata/statbel_population_municipality.RDS")
+saveRDS(prov, "inst/extdata/statbel_population_province.RDS")
+saveRDS(rgn, "inst/extdata/statbel_population_region.RDS")
+saveRDS(COMTY, "inst/extdata/statbel_population_community.RDS")
+
 
 
