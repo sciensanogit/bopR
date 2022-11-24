@@ -32,7 +32,7 @@ devtools::install_github("sciensanogit/bopR")
 
 ## Population datasets
 
-the `bepop` package contains population files on different geographical levels (municipalities - districts - provinces -  regions - country). The datasets are named as follows:
+the `bopR` package contains population files on different geographical levels (municipalities - districts - provinces -  regions - country). The datasets are named as follows:
 
 * *BE_POP_MUNTY*: municipalities
 * *BE_POP_ARRD*: districts
@@ -52,9 +52,13 @@ for more information on the content of each dataset, you can always consult the 
 # kableExtra::kable(betab)
 ```
 
+## Population data by statistical sector
+
+the `bopR` package also contains population files on statistical sector level (not by sex or age). The dataset is named: `BE_POP_SECTOR`.
+
 ## Population projection datasets
 
-the `bepop` package also contains population projection files on different geographical levels (districts - provinces -  regions - country). The datasets are named as follows:
+the `bopR` package also contains population projection files on different geographical levels (districts - provinces -  regions - country). The datasets are named as follows:
 
 ## Data sources
 

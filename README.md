@@ -22,7 +22,7 @@ devtools::install_github("sciensanogit/bopR")
 
 ## Population datasets
 
-the `bepop` package contains population files on different geographical
+the `bopR` package contains population files on different geographical
 levels (municipalities - districts - provinces - regions - country). The
 datasets are named as follows:
 
@@ -36,9 +36,14 @@ for more information on the content of each dataset, you can always
 consult the help-file by `?BE_POP`. The population structure of Belgium
 over the years was as follows:
 
+## Population data by statistical sector
+
+the `bopR` package also contains population files on statistical sector
+level (not by sex or age). The dataset is named: `BE_POP_SECTOR`.
+
 ## Population projection datasets
 
-the `bepop` package also contains population projection files on
+the `bopR` package also contains population projection files on
 different geographical levels (districts - provinces - regions -
 country). The datasets are named as follows:
 
