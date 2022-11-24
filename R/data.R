@@ -48,6 +48,50 @@
 #' }
 NULL
 
+#' @name BE_POP_sector
+#' @aliases
+#' @title Population datasets by location at the level of the statistical sector within Belgium extracted from Open Data at Statistics Belgium.
+#' @description Population datasets by location at the level of the statistical sector within Belgium extracted from Open Data at Statistics Belgium. Namely:
+#'
+#' \itemize{
+#' \item BE_POP_sector: data.frame with data at the level of the whole of Belgium
+#' }
+#'
+#'
+#' The data contains the following elements which were available at different levels.
+#' \itemize{
+#' \item YEAR: Population reference year on the 1st of January
+#' \item CD_REFNIS: code of the municipality
+#' \item CD_SECTOR: code of the statistical sector (NIS9)
+#' \item TOTAL: Number of inhabitants in the statistical sector on the 1st of January
+#' \item DT_STRT_SECTOR: date of creation of the statistical sector
+#' \item DT_SIOP_SECTOR: date stop statistical sector
+#' \item OPPERVLAKTE IN HM²: Surface area of the statistical sector
+#' \item TX_DESCR_SECTOR_NL: name of the statistical sector (Dutch)
+#' \item TX_DESCR_SECTOR_FR: name of the statistical sector (French)
+#' \item TX_DESCR_NL: name of the municipality (Dutch)
+#' \item TX_DESCR_FR: name of the municipality (French)
+
+#' }
+#'
+#' @docType data
+#' @source \url{https://statbel.fgov.be/en/themes/population}
+#' @references \url{http://statbel.fgov.be/nl/statistieken/opendata/datasets/tools}
+#' @examples
+#' \dontrun{
+#' data(BE_POP_sector)
+#' class(BE_POP_sector)
+#' str(BE_POP_sector)
+#' }
+NULL
+
+
+
+
+
+
+
+
 #' @name BE_POP_PROJ
 #' @aliases BE_POP_PROJ_ARRD BE_POP_PROJ_PROV BE_POP_PROJ_RGN
 #' @title Population projections by location, sex and age within Belgium extracted from Open Data at Planbureau Belgium.
