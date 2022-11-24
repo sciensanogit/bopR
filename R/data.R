@@ -78,13 +78,13 @@ NULL
 #' str(BE_POP_MUNTY)
 
 
-#' @name BE_POP_sector
+#' @name BE_POP_SECTOR
 #' @aliases
 #' @title Population datasets by location at the level of the statistical sector within Belgium extracted from Open Data at Statistics Belgium.
 #' @description Population datasets by location at the level of the statistical sector within Belgium extracted from Open Data at Statistics Belgium. Namely:
 #'
 #' \itemize{
-#' \item BE_POP_sector: data.frame with data at the level of the whole of Belgium
+#' \item BE_POP_SECTOR: data.frame with data at the level of the whole of Belgium
 #' }
 #'
 #'
@@ -109,10 +109,12 @@ NULL
 #' @references \url{http://statbel.fgov.be/nl/statistieken/opendata/datasets/tools}
 #' @examples
 #' \dontrun{
-#' data(BE_POP_sector)
-#' class(BE_POP_sector)
-#' str(BE_POP_sector)
-
+#' data(BE_POP_SECTOR)
+#' class(BE_POP_SECTOR)
+#' str(BE_POP_SECTOR)
+#' data(BE_POP_SECTOR)
+#' class(BE_POP_SECTOR)
+#' str(BE_POP_SECTOR)
 #' }
 NULL
 
