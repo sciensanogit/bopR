@@ -566,8 +566,4 @@ aggregate(prov, POPULATION ~ YEAR, FUN = sum)
 aggregate(rgn, POPULATION ~ YEAR, FUN = sum)
 subset(BE_POP_PROJ, subset = SEX == "MF" & AGE == "ALL", select = c("YEAR", "POPULATION"))
 
-## save data into package data
-usethis::use_data(BE_POP_MUNTY, BE_POP_ARRD, BE_POP_PROV, BE_POP_RGN,
-                  BE_POP, BE_POP_PROJ_ARRD, BE_POP_PROJ_PROV, BE_POP_PROJ_RGN,
-                  BE_POP_PROJ, overwrite = TRUE,
-                  compress = "xz", version = 2)
+
