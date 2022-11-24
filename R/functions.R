@@ -12,11 +12,6 @@
 #' @param year Year for which the data is requested
 #' @returns a df (if only arr and gender provide), a vector (if three parameters are provided)
 #' or a single value ( if all four parameters are provided)
-#' @examples
-#' selectData("Charleroi","MF")
-#' selectData("Charleroi","MF", year = 1995)
-#' selectData("Charleroi","MF", ageGroup = 15)
-#' selectData("Charleroi","MF" , year = 1995, ageGroup = 15)
 #' @export
 selectData <- function(arr,gender,year = NULL,ageGroup = NULL, ARROND = ARROND, FPB = FPB)
 {
