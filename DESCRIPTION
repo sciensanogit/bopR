@@ -1,12 +1,18 @@
 Package: bopR
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: bopR is an open-source package that provides Belgian population data
+Version: 0.0.1
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Lize", "Hermans", , "lize.hermans@sciensano.be", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Aline", "Scohy", , "aline.scohy@sciensano.be", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Sven", "Hanoteaux", , "sven.hanoteaux@sciensano.be", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Robby", "De Pauw", , "robby.depauw@sciensano.be", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: The package was developed to make the open-source datasets that are made available by Statbel
+    and the Federal Planning Buro in R.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0

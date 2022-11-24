@@ -1,5 +1,23 @@
-
-# function for selecting Arrondissement - gender and optionally year and age group
+#' Extract data from the Belgian Federal Plan Bureau
+#'
+#' `selectData` extrart data from a list based on four parameters: arrondissement,
+#' gender, year and age
+#'
+#' @param arr Name of the arrondissement. The list of arrondissement is provided
+#' in the object ARROND
+#' @param gender Gender for which you want the data - should be in "MF" -
+#' Male and Female, "F"- female or "M"-male
+#' @param ageGroup Age fro whihc the data is requested - from 0 to 110
+#' - optionnal
+#' @param year Year for which the data is requested
+#' @returns a df (if only arr and gender provide), a vector (if three parameters are provided)
+#' or a single value ( if all four parameters are provided)
+#' @examples
+#' selectData("Charleroi","MF")
+#' selectData("Charleroi","MF", year = 1995)
+#' selectData("Charleroi","MF", ageGroup = 15)
+#' selectData("Charleroi","MF" , year = 1995, ageGroup = 15)
+#' @export
 selectData <- function(arr,gender,year = NULL,ageGroup = NULL, ARROND = ARROND, FPB = FPB)
 {
   if(!(arr %in% ARROND))

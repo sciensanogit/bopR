@@ -3,15 +3,8 @@
 ## This script will download datasets with statistical sectors from Statbel website
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## sources all the needed functions
-funcs <- list.files("codes/functions/")
-invisible(lapply(paste0("codes/functions/",funcs), source))
-
-## packages needed
-pcks <- c("rio","openxlsx","data.table",'readxl',"pbapply")
-
-## load/install packages
-pkgCheck(pcks)
+## Load packages
+library(rio)
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BELGIUM DATA STATBEL ####
@@ -52,5 +45,10 @@ for (i in 1:nrow(STATBEL))
 }
 
 # select variables
-STATBEL[c("YEAR", "CD_REFNIS", "CD_SECTOR", "TOTAL", "DT_STR_SECTOR", "DT_STOP_SECTOR", "OPPERVLAKTE IN HM²",
+STATBEL <- STATBEL[,c("YEAR", "CD_REFNIS", "CD_SECTOR", "TOTAL", "DT_STRT_SECTOR", "DT_STOP_SECTOR", "OPPERVLAKTE IN HM²",
           "TX_DESCR_SECTOR_NL", "TX_DESCR_SECTOR_FR", "TX_DESCR_NL", "TX_DESCR_FR")]
+
+STATBEL <- as.data.frame(STATBEL)
+
+# save as RDS
+saveRDS(STATBEL, "inst/extdata/statbel_data_sector.RDS")
