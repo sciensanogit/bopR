@@ -20,6 +20,7 @@ devtools::check()
 ## build package
 devtools::build()
 ## build readme
+#usethis::use_readme_rmd()
 devtools::build_readme()
 
 ## document
