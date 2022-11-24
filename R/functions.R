@@ -1,6 +1,6 @@
 
 # function for selecting Arrondissement - gender and optionally year and age group
-selectData <- function(arr,gender,year = NULL,ageGroup = NULL)
+selectData <- function(arr,gender,year = NULL,ageGroup = NULL, ARROND = ARROND, FPB = FPB)
 {
   if(!(arr %in% ARROND))
   {
