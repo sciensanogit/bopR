@@ -20,38 +20,43 @@ You can install the development version of bopR from
 devtools::install_github("sciensanogit/bopR")
 ```
 
-## Example
+## Population datasets
 
-This is a basic example which shows you how to solve a common problem:
+the `bepop` package contains population files on different geographical
+levels (municipalities - districts - provinces - regions - country). The
+datasets are named as follows:
 
-``` r
-library(bopR)
-## basic example code
-```
+-   *BE_POP_MUNTY*: municipalities
+-   *BE_POP_ARRD*: districts
+-   *BE_POP_PROV*: provinces (+ Brussels Capital Region for simplicity)
+-   *BE_POP_RGN*: regions
+-   *BE_POP*: country
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+for more information on the content of each dataset, you can always
+consult the help-file by `?BE_POP`. The population structure of Belgium
+over the years was as follows:
 
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
+## Population projection datasets
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
+the `bepop` package also contains population projection files on
+different geographical levels (districts - provinces - regions -
+country). The datasets are named as follows:
 
-You can also embed plots, for example:
+## Data sources
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
+The idea for this package is inspired by the [BelgiumMaps.StatBel
+package](https://github.com/bnosac/BelgiumMaps.StatBel), developed by
+Jan Wijffels at
+[BNOSAC](http://www.bnosac.be/index.php/blog/55-belgiummaps-statbel-r-package-with-administrative-boundaries-of-belgium).
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+The population files are obtained from the Statbel open data and the
+open data from the federal plan bureau (FPB) of Belgium:
+
+-   **<https://statbel.fgov.be/en/themes/population>** includes
+    information on the population of Belgium on the 1st of January for
+    each year.
+-   **<https://www.plan.be/publications/publication-2255-nl-demografische_vooruitzichten_2021_2070_update_sterke_opwaartse_herziening_van_de_bevolkingsgroei_in_2022>**
+    includes information on the population projections of Belgium.
+
+To calculate the mid-year population of year `x`, one should average the
+population of year `x` and year `x+1` .
