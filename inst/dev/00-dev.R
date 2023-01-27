@@ -1,8 +1,9 @@
 ## APP set-up
 ## INFO
-## .. 00-dev
-## .. 01-main
-## .. 02-update
+## .. 00-dev: general script
+## .. 01-statbel-data: script to output statbel dataset
+## .. 02-federal-planning-bureau-data: script to output FPB dataset
+## .. 03-merge: merge the datasets and save them in a package-ready format
 
 ## data on population available from statbel
 
