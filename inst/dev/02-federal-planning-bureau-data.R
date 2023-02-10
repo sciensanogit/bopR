@@ -23,10 +23,14 @@ library(openxlsx)
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## .. READ DATA ####
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## read-in data for NUTS names and NIS
+nuts <- openxlsx::read.xlsx("inst/extdata/TU_COM_NUTS_LAU-20190101-PROJ.xlsx")
+nuts <- nuts[c("TX_FPB", "CD_MUNTY_REFNIS", "TX_DESCR_DE", "TX_DESCR_EN", "TX_DESCR_FR", "TX_DESCR_NL")]
+
 ## read-in and extract data
 ls <-
   list.files(path = "inst/extdata/",
-             pattern = ".xlsx",
+             pattern = "nl.xlsx",
              full.names = TRUE)
 dta <- list()
 i <- 1
@@ -95,16 +99,16 @@ head(dta$popprovnl) ## Province
 head(dta$poparrnl) ## Arrondisments
 
 ## translate of non-ASCII characters
-dta[[1]]$REGION <-
-  stringi::stri_trans_general(dta[[1]]$REGION, "latin-ascii")
-dta[[2]]$REGION <-
-  stringi::stri_trans_general(dta[[2]]$REGION, "latin-ascii")
-dta[[3]]$REGION <-
-  stringi::stri_trans_general(dta[[3]]$REGION, "latin-ascii")
-dta[[4]]$REGION <-
-  stringi::stri_trans_general(dta[[4]]$REGION, "latin-ascii")
-dta[[5]]$REGION <-
-  stringi::stri_trans_general(dta[[5]]$REGION, "latin-ascii")
+# dta[[1]]$REGION <-
+#   stringi::stri_trans_general(dta[[1]]$REGION, "latin-ascii")
+# dta[[2]]$REGION <-
+#   stringi::stri_trans_general(dta[[2]]$REGION, "latin-ascii")
+# dta[[3]]$REGION <-
+#   stringi::stri_trans_general(dta[[3]]$REGION, "latin-ascii")
+# dta[[4]]$REGION <-
+#   stringi::stri_trans_general(dta[[4]]$REGION, "latin-ascii")
+# dta[[5]]$REGION <-
+#   stringi::stri_trans_general(dta[[5]]$REGION, "latin-ascii")
 
 ## add abbrevation for region
 unique(dta[[1]]$REGION)
@@ -113,30 +117,30 @@ unique(dta[[3]]$REGION)
 unique(dta[[4]]$REGION)
 unique(dta[[5]]$REGION)
 
-unique(dta$popregnl$REGION)
-dta$popregnl$REGION <- factor(dta$popregnl$REGION,
-                       c("Brussels Hoofdstedelijk Gewest",
-                         "Vlaams Gewest",
-                         "Waals Gewest incl. Duitst. Gem."),
-                       c("BR", "FL", "WA"))
-
-unique(dta$popbelnl$REGION)
-dta$popbelnl$REGION <- factor(dta$popbelnl$REGION,
-                          c("Belgie"),
-                          c("BE"))
-
-## german community
-unique(dta$popcomnl$REGION)
-dta$popcomnl$REGION <- factor(dta$popcomnl$REGION,
-                              c("Duitst. Gemeenchap"),
-                              c("GC"))
+# unique(dta$popregnl$REGION)
+# dta$popregnl$REGION <- factor(dta$popregnl$REGION,
+#                        c("Brussels Hoofdstedelijk Gewest",
+#                          "Vlaams Gewest",
+#                          "Waals Gewest incl. Duitst. Gem."),
+#                        c("BR", "FL", "WA"))
+#
+# unique(dta$popbelnl$REGION)
+# dta$popbelnl$REGION <- factor(dta$popbelnl$REGION,
+#                           c("Belgie"),
+#                           c("BE"))
+#
+# ## german community
+# unique(dta$popcomnl$REGION)
+# dta$popcomnl$REGION <- factor(dta$popcomnl$REGION,
+#                               c("Duitst. Gemeenchap"),
+#                               c("GC"))
 
 ###
 # Calculate projections by community
 ###
 ## .. merge region with community and substract GC numbers
-tmp.region.FR <- subset(dta$popregnl, REGION == "WA")
-tmp.region.BRFL <- subset(dta$popregnl, REGION != "WA")
+tmp.region.FR <- subset(dta$popregnl, REGION == "Waals Gewest incl. Duitst. Gem.")
+tmp.region.BRFL <- subset(dta$popregnl, REGION != "Waals Gewest incl. Duitst. Gem.")
 tmp.comm.GC <- dta$popcomnl
 
 tmp.comm.FR <- full_join(
@@ -147,7 +151,7 @@ tmp.comm.FR <- full_join(
 
 ## .. calculate and add
 tmp.comm.FR$POPULATION <- tmp.comm.FR$POPULATION.x - tmp.comm.FR$POPULATION.y
-tmp.comm.FR$REGION <- "WA"
+tmp.comm.FR$REGION <- "Waals Gewest"
 
 ## .. select
 tmp.comm.FR <- subset(tmp.comm.FR, select = c("AGE", "SEX", "REGION", "YEAR", "AGE5", "AGE10", "POPULATION"))
@@ -160,9 +164,6 @@ tmp.comm <- bind_rows(
   )
 
 unique(tmp.comm$REGION)
-tmp.comm$REGION <- factor(tmp.comm$REGION,
-                          c("BR", "FL", "WA", "GC"),
-                          c("BR", "FL", "WA", "GC"))
 
 ## overwrite
 dta$popcomnl <- tmp.comm
@@ -186,6 +187,24 @@ arrd_sex$AGE10 <- "ALL"
 
 BE_POP_PROJ_ARRD <- bind_rows(arrd_age, arrd_sex)
 
+## .. .. check unique values
+BE_POP_PROJ_ARRD$REGION[BE_POP_PROJ_ARRD$REGION != "Brussels Hoofdstedelijk Gewest"] <- paste0("A. ", BE_POP_PROJ_ARRD$REGION[BE_POP_PROJ_ARRD$REGION != "Brussels Hoofdstedelijk Gewest"])
+BE_POP_PROJ_ARRD$REGION[BE_POP_PROJ_ARRD$REGION == "Brussels Hoofdstedelijk Gewest"] <- "A. Brussel-Hoofdstad"
+unique(BE_POP_PROJ_ARRD$REGION)
+
+## .. .. merge with nuts for projection
+BE_POP_PROJ_ARRD <- left_join(BE_POP_PROJ_ARRD, nuts, by = c("REGION" = "TX_FPB"))
+
+## .. .. rename
+BE_POP_PROJ_ARRD <- rename(
+  BE_POP_PROJ_ARRD,
+  REFNIS = CD_MUNTY_REFNIS,
+  DESCR_EN = TX_DESCR_EN,
+  DESCR_NL = TX_DESCR_NL,
+  DESCR_FR = TX_DESCR_FR,
+  DESCR_DE = TX_DESCR_DE)
+BE_POP_PROJ_ARRD <- select(BE_POP_PROJ_ARRD, -REGION)
+
 ## .. PROV
 prov_age <- dta$popprovnl
 prov_age$AGE <- as.character(prov_age$AGE)
@@ -199,6 +218,22 @@ prov_sex$AGE5 <- "ALL"
 prov_sex$AGE10 <- "ALL"
 
 BE_POP_PROJ_PROV <- bind_rows(prov_age, prov_sex)
+
+## .. .. check unique values
+unique(BE_POP_PROJ_PROV$REGION)
+
+## .. .. merge with nuts for projection
+BE_POP_PROJ_PROV <- left_join(BE_POP_PROJ_PROV, nuts, by = c("REGION" = "TX_FPB"))
+
+## .. .. rename
+BE_POP_PROJ_PROV <- rename(
+  BE_POP_PROJ_PROV,
+  REFNIS = CD_MUNTY_REFNIS,
+  DESCR_EN = TX_DESCR_EN,
+  DESCR_NL = TX_DESCR_NL,
+  DESCR_FR = TX_DESCR_FR,
+  DESCR_DE = TX_DESCR_DE)
+BE_POP_PROJ_PROV <- select(BE_POP_PROJ_PROV, -REGION)
 
 ## .. RGN
 rgn_age <- dta$popregnl
@@ -214,6 +249,22 @@ rgn_sex$AGE10 <- "ALL"
 
 BE_POP_PROJ_RGN <- bind_rows(rgn_age, rgn_sex)
 
+## .. .. check unique values
+unique(BE_POP_PROJ_RGN$REGION)
+
+## .. .. merge with nuts for projection
+BE_POP_PROJ_RGN <- left_join(BE_POP_PROJ_RGN, nuts, by = c("REGION" = "TX_FPB"))
+
+## .. .. rename
+BE_POP_PROJ_RGN <- rename(
+  BE_POP_PROJ_RGN,
+  REFNIS = CD_MUNTY_REFNIS,
+  DESCR_EN = TX_DESCR_EN,
+  DESCR_NL = TX_DESCR_NL,
+  DESCR_FR = TX_DESCR_FR,
+  DESCR_DE = TX_DESCR_DE)
+BE_POP_PROJ_RGN <- select(BE_POP_PROJ_RGN, -REGION)
+
 ## .. BEL
 be_age <- dta$popbelnl
 be_age$AGE <- as.character(be_age$AGE)
@@ -228,8 +279,21 @@ be_sex$AGE10 <- "ALL"
 
 BE_POP_PROJ <- bind_rows(be_age, be_sex)
 
+## .. .. check unique values
+unique(BE_POP_PROJ$REGION)
+
+## .. .. merge with nuts for projection
+BE_POP_PROJ$REFNIS <- 100
+BE_POP_PROJ$DESCR_DE <- "Belgien"
+BE_POP_PROJ$DESCR_EN <- "Belgium"
+BE_POP_PROJ$DESCR_NL <- "België"
+BE_POP_PROJ$DESCR_FR <- "Belgique"
+
+## .. .. rename
+BE_POP_PROJ <- select(BE_POP_PROJ, -REGION)
+
 ## .. COMTY
-comty_age <- dta$popbelnl
+comty_age <- dta$popcomnl
 comty_age$AGE <- as.character(comty_age$AGE)
 comty_sex <- aggregate(
   data = comty_age,
@@ -242,15 +306,45 @@ comty_sex$AGE10 <- "ALL"
 
 BE_POP_PROJ_COMTY <- bind_rows(comty_age, comty_sex)
 
+## .. .. check unique values
+unique(BE_POP_PROJ_COMTY$REGION)
+
+## .. .. add row to nuts
+nuts.gc <- tibble(
+  TX_FPB = "Duitst. Gemeenchap",
+  CD_MUNTY_REFNIS = "9999",
+  TX_DESCR_DE = "Deutschsprachige Gemeinschaft",
+  TX_DESCR_EN = "German-speaking Community",
+  TX_DESCR_FR = 'Communauté germanophone',
+  TX_DESCR_NL = 'Duitstalige Gemeenschap'
+)
+nuts <- bind_rows(nuts, nuts.gc)
+
+## .. .. rename
+BE_POP_PROJ_COMTY$REGION[BE_POP_PROJ_COMTY$REGION == "Waals Gewest"] <- "Waals Gewest incl. Duitst. Gem."
+
+## .. .. merge with nuts for projection
+BE_POP_PROJ_COMTY <- left_join(BE_POP_PROJ_COMTY, nuts, by = c("REGION" = "TX_FPB"))
+
+## .. .. rename
+BE_POP_PROJ_COMTY <- rename(
+  BE_POP_PROJ_COMTY,
+  REFNIS = CD_MUNTY_REFNIS,
+  DESCR_EN = TX_DESCR_EN,
+  DESCR_NL = TX_DESCR_NL,
+  DESCR_FR = TX_DESCR_FR,
+  DESCR_DE = TX_DESCR_DE)
+BE_POP_PROJ_COMTY <- select(BE_POP_PROJ_COMTY, -REGION)
+
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## SAVE DATA ####
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## check if aggregation was correct (all number should be the same)
-aggregate(BE_POP_PROJ, POPULATION ~ YEAR, FUN = sum) # reference
-aggregate(BE_POP_PROJ_RGN, POPULATION ~ YEAR, FUN = sum)
-aggregate(BE_POP_PROJ_COMTY, POPULATION ~ YEAR, FUN = sum)
-aggregate(BE_POP_PROJ_PROV, POPULATION ~ YEAR, FUN = sum)
-aggregate(BE_POP_PROJ_ARRD, POPULATION ~ YEAR, FUN = sum)
+# aggregate(BE_POP_PROJ, POPULATION ~ YEAR, FUN = sum) # reference
+# aggregate(BE_POP_PROJ_RGN, POPULATION ~ YEAR, FUN = sum)
+# aggregate(BE_POP_PROJ_COMTY, POPULATION ~ YEAR, FUN = sum)
+# aggregate(BE_POP_PROJ_PROV, POPULATION ~ YEAR, FUN = sum)
+# aggregate(BE_POP_PROJ_ARRD, POPULATION ~ YEAR, FUN = sum)
 
 ## save the results
 saveRDS(BE_POP_PROJ, "inst/extdata/BE_POP_PROJ.rds")

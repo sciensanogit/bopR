@@ -3,9 +3,15 @@
 \docType{data}
 \name{BE_POP_PROJ}
 \alias{BE_POP_PROJ}
+\alias{SPMA_PROJ}
 \alias{BE_POP_PROJ_ARRD}
+\alias{BE_POP_PROJ_COMTY}
 \alias{BE_POP_PROJ_PROV}
 \alias{BE_POP_PROJ_RGN}
+\alias{SPMA_PROJ_ARRD}
+\alias{SPMA_PROJ_COMTY}
+\alias{SPMA_PROJ_PROV}
+\alias{SPMA_PROJ_RGN}
 \title{Population projections by location, sex and age within Belgium extracted from Open Data at Planbureau Belgium.}
 \source{
 \url{https://www.plan.be/databases/}
@@ -14,7 +20,8 @@
 Population projections by location, sex and age within Belgium extracted from Open Data at Planbureau Belgium.
 
 \itemize{
-#' \item BE_POP_PROJ_ARRD: data.frame with data at the level of the district
+\item BE_POP_PROJ_ARRD: data.frame with data at the level of the district
+\item BE_POP_PROJ_COMTY: data.frame with data at the level of the community
 \item BE_POP_PROJ_PROV: data.frame with data at the level of the province
 \item BE_POP_PROJ_RGN: data.frame with data at the level of the region
 \item BE_POP_PROJ: data.frame with data at the level of the whole of Belgium
@@ -22,7 +29,11 @@ Population projections by location, sex and age within Belgium extracted from Op
 
 The data contains the following elements which were available at different levels.
 \itemize{
-\item REGION: Name of the region
+\item REFNIS: NIS-code for then region
+\item DESCR_DE: description of the region in German
+\item DESCR_NL: description of the region in Dutch
+\item DESCR_EN: description of the region in English
+\item DESCR_FR: description of the region in French
 \item YEAR: Population reference year on the 1st of January
 \item SEX: Sex of the population subgroup ("M" for men, "F" for women and "MF" for both)
 \item AGE: Age of the population subgroup (exact age)

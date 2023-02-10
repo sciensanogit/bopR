@@ -21,7 +21,7 @@ library(openxlsx)
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## .. READ DATA ####
+## .. COMBINE RAW DATA ####
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## read-in and extract data
 ls <-
@@ -62,8 +62,13 @@ for (fzip in ls) {
 saveRDS(object = dta,
         file = sprintf("inst/extdata/statbel-data-combined-%s-%s.rds", min(dta$CD_YEAR), max(dta$CD_YEAR)))
 
-## load prepared data
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## .. LOAD DATA ####
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## load prepared data with population data
 dta <- readRDS("inst/extdata/statbel-data-combined-2009-2022.rds")
+## read-in data for NUTS names and NIS
+nuts <- openxlsx::read.xlsx("inst/extdata/TU_COM_NUTS_LAU-20190101.xlsx")
 
 ## check the structure of the data
 head(dta)
@@ -85,27 +90,14 @@ head(
     select = TX_PROV_DESCR_NL))
 
 ## .. replace empty province by region of BXL
-dta$TX_PROV_DESCR_NL[dta$TX_RGN_DESCR_NL == "Brussels Hoofdstedelijk Gewest"] <- "Brussels Hoofdstedelijk Gewest"
-dta$TX_PROV_DESCR_FR[dta$TX_RGN_DESCR_NL == "Brussels Hoofdstedelijk Gewest"] <- "Région de Bruxelles-Capitale"
 dta$CD_PROV_REFNIS[dta$TX_RGN_DESCR_NL == "Brussels Hoofdstedelijk Gewest"] <- 4000
 
-## check munty
-sum(is.na(dta$TX_MUNTY_DESCR_NL)) ## missing because of change in filename
-unique(dta$TX_MUNTY_DESCR_NL)
-which(is.na(dta$TX_MUNTY_DESCR_NL)) ## some are NA (replace by "Unknown")
-which(is.na(dta$CD_MUNTY_REFNIS)) ## some are NA (replace by 99999)
-
-##
+## check munty (empty refnis)
+which(is.na(dta$CD_MUNTY_REFNIS))
 # --> solution
-##
-
 ## merge CD_REFNIS and CD_MUNTY_REFNIS
 dta$CD_MUNTY_REFNIS <-
-  coalesce(dta$CD_MUNTY_REFNIS, dta$CD_MUNTY_REFNIS)
-dta$TX_MUNTY_DESCR_NL <-
-  coalesce(dta$TX_MUNTY_DESCR_NL, dta$TX_DESCR_NL)
-dta$TX_MUNTY_DESCR_FR <-
-  coalesce(dta$TX_MUNTY_DESCR_FR, dta$TX_DESCR_FR)
+  coalesce(dta$CD_MUNTY_REFNIS, dta$CD_REFNIS)
 
 ## extract variables
 dta <-
@@ -113,17 +105,9 @@ dta <-
     dta,
     select = c(
       "CD_MUNTY_REFNIS",
-      "TX_MUNTY_DESCR_NL",
-      "TX_MUNTY_DESCR_FR",
       "CD_DSTR_REFNIS",
-      "TX_ADM_DSTR_DESCR_NL",
-      "TX_ADM_DSTR_DESCR_FR",
       "CD_PROV_REFNIS",
-      "TX_PROV_DESCR_NL",
-      "TX_PROV_DESCR_FR",
       "CD_RGN_REFNIS",
-      "TX_RGN_DESCR_NL",
-      "TX_RGN_DESCR_FR",
       "CD_AGE",
       "CD_SEX",
       "CD_YEAR",
@@ -131,16 +115,34 @@ dta <-
     )
   )
 
+nuts <-
+  subset(
+    nuts,
+    select = c(
+      "CD_MUNTY_REFNIS",
+      "TX_DESCR_DE",
+      "TX_DESCR_EN",
+      "TX_DESCR_FR",
+      "TX_DESCR_NL"
+    )
+  )
+
+nuts <- rename(nuts, CD_REFNIS = CD_MUNTY_REFNIS)
+nuts$CD_REFNIS <- as.numeric(nuts$CD_REFNIS)
+
 ## rename variables
 dta <- rename(dta,
-              TX_ARRD_DESCR_NL = TX_ADM_DSTR_DESCR_NL,
-              TX_ARRD_DESCR_FR = TX_ADM_DSTR_DESCR_FR,
               CD_ARRD_REFNIS = CD_DSTR_REFNIS)
 
 ## .. remove CD_, MS_ and TX_
 colnames(dta) <-
   gsub(pattern = "CD_|TX_|MS_",
        x = colnames(dta),
+       replacement = "")
+
+colnames(nuts) <-
+  gsub(pattern = "CD_|TX_|MS_",
+       x = colnames(nuts),
        replacement = "")
 
 ## .. create age-groups
@@ -163,54 +165,28 @@ dta$AGE10 <- cut(dta$AGE, breaks = agei, labels = age, include.lowest = TRUE, ri
 dta$AGE <- factor(dta$AGE)
 dta$SEX <- factor(dta$SEX, c("M", "F"))
 
-## translate of non-ASCII characters
-dta$MUNTY_DESCR_NL <-
-  stringi::stri_trans_general(dta$MUNTY_DESCR_NL, "latin-ascii")
-dta$MUNTY_DESCR_FR <-
-  stringi::stri_trans_general(dta$MUNTY_DESCR_FR, "latin-ascii")
-dta$ARRD_DESCR_NL <-
-  stringi::stri_trans_general(dta$ARRD_DESCR_NL, "latin-ascii")
-dta$ARRD_DESCR_FR <-
-  stringi::stri_trans_general(dta$ARRD_DESCR_FR, "latin-ascii")
-dta$PROV_DESCR_NL <-
-  stringi::stri_trans_general(dta$PROV_DESCR_NL, "latin-ascii")
-dta$PROV_DESCR_FR <-
-  stringi::stri_trans_general(dta$PROV_DESCR_FR, "latin-ascii")
-dta$RGN_DESCR_NL <-
-  stringi::stri_trans_general(dta$RGN_DESCR_NL, "latin-ascii")
-dta$RGN_DESCR_FR <-
-  stringi::stri_trans_general(dta$RGN_DESCR_FR, "latin-ascii")
-
-## add abbrevation for region
-dta$RGN_ABBR <- factor(dta$RGN_DESCR_NL,
-                       c("Brussels Hoofdstedelijk Gewest",
-                         "Vlaams Gewest",
-                         "Waals Gewest"),
-                       c("BR", "FL", "WA"))
-
-which(is.na(dta$RGN_ABBR))
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## .. AGGREGATE DATA ####
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## calculate summaries
+## aggregate by different geographical levels
 ## .. MUNTY
 munty_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + MUNTY_REFNIS + MUNTY_DESCR_NL + MUNTY_DESCR_FR +
-    ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + MUNTY_REFNIS +
+    # ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
 munty_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + MUNTY_REFNIS + MUNTY_DESCR_NL + MUNTY_DESCR_FR +
-    ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + MUNTY_REFNIS +
+    # ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     AGE + AGE5 + AGE10,
   FUN = sum
 )
@@ -218,10 +194,10 @@ munty_age$SEX <- "MF"
 
 munty_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + MUNTY_REFNIS + MUNTY_DESCR_NL + MUNTY_DESCR_FR +
-    ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + MUNTY_REFNIS +
+    # ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX,
   FUN = sum
 )
@@ -231,10 +207,10 @@ munty_sex$AGE10 <- "ALL"
 
 munty <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + MUNTY_REFNIS + MUNTY_DESCR_NL + MUNTY_DESCR_FR +
-    ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  POPULATION ~ YEAR + MUNTY_REFNIS,
+    # ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
     FUN = sum
 )
 munty$SEX <- "MF"
@@ -243,22 +219,27 @@ munty$AGE5 <- "ALL"
 munty$AGE10 <- "ALL"
 
 BE_POP_MUNTY <- bind_rows(munty, munty_age, munty_age_sex, munty_sex)
+BE_POP_MUNTY <- rename(BE_POP_MUNTY, REFNIS = MUNTY_REFNIS)
+
+## .. .. map description
+BE_POP_MUNTY <- left_join(BE_POP_MUNTY, nuts, by = "REFNIS")
+sum(is.na(BE_POP_MUNTY$DESCR_EN))
 
 ## .. ARRD
 arrd_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + ARRD_REFNIS +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
 arrd_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + ARRD_REFNIS +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     AGE + AGE5 + AGE10,
   FUN = sum
 )
@@ -266,9 +247,9 @@ arrd_age$SEX <- "MF"
 
 arrd_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + ARRD_REFNIS +
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX,
   FUN = sum
 )
@@ -278,9 +259,9 @@ arrd_sex$AGE10 <- "ALL"
 
 arrd <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + ARRD_REFNIS + ARRD_DESCR_NL + ARRD_DESCR_FR +
-    PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  POPULATION ~ YEAR + ARRD_REFNIS,
+    # PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
     FUN = sum
 )
 arrd$SEX <- "MF"
@@ -289,20 +270,25 @@ arrd$AGE5 <- "ALL"
 arrd$AGE10 <- "ALL"
 
 BE_POP_ARRD <- bind_rows(arrd, arrd_age, arrd_age_sex, arrd_sex)
+BE_POP_ARRD <- rename(BE_POP_ARRD, REFNIS = ARRD_REFNIS)
+
+## .. .. map description
+BE_POP_ARRD <- left_join(BE_POP_ARRD, nuts, by = "REFNIS")
+sum(is.na(BE_POP_ARRD$DESCR_EN))
 
 ## .. PROV
 prov_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + PROV_REFNIS +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
 prov_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + PROV_REFNIS +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     AGE + AGE5 + AGE10,
   FUN = sum
 )
@@ -310,8 +296,8 @@ prov_age$SEX <- "MF"
 
 prov_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
+  POPULATION ~ YEAR + PROV_REFNIS +
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR +
     SEX,
   FUN = sum
 )
@@ -321,8 +307,8 @@ prov_sex$AGE10 <- "ALL"
 
 prov <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + PROV_REFNIS + PROV_DESCR_NL + PROV_DESCR_FR +
-    RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  POPULATION ~ YEAR + PROV_REFNIS,
+    # RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
     FUN = sum
 )
 prov$SEX <- "MF"
@@ -331,24 +317,29 @@ prov$AGE5 <- "ALL"
 prov$AGE10 <- "ALL"
 
 BE_POP_PROV <- bind_rows(prov, prov_age, prov_age_sex, prov_sex)
+BE_POP_PROV <- rename(BE_POP_PROV, REFNIS = PROV_REFNIS)
+
+## .. .. map description
+BE_POP_PROV <- left_join(BE_POP_PROV, nuts, by = "REFNIS")
+sum(is.na(BE_POP_PROV$DESCR_EN))
 
 ## .. RGN
 rgn_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + RGN_REFNIS + SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
 rgn_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + RGN_REFNIS + AGE + AGE5 + AGE10,
   FUN = sum
 )
 rgn_age$SEX <- "MF"
 
 rgn_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR + SEX,
+  POPULATION ~ YEAR + RGN_REFNIS + SEX,
   FUN = sum
 )
 rgn_sex$AGE <- "ALL"
@@ -357,7 +348,7 @@ rgn_sex$AGE10 <- "ALL"
 
 rgn <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + RGN_REFNIS + RGN_DESCR_NL + RGN_DESCR_FR + RGN_ABBR,
+  POPULATION ~ YEAR + RGN_REFNIS,
   FUN = sum
 )
 rgn$SEX <- "MF"
@@ -366,33 +357,45 @@ rgn$AGE5 <- "ALL"
 rgn$AGE10 <- "ALL"
 
 BE_POP_RGN <- bind_rows(rgn, rgn_age, rgn_age_sex, rgn_sex)
+BE_POP_RGN <- rename(BE_POP_RGN, REFNIS = RGN_REFNIS)
 
-## .. COMMUNITIES (NEEDS TO BE UPDATED!!)
+## .. .. map description
+BE_POP_RGN <- left_join(BE_POP_RGN, nuts, by = "REFNIS")
+sum(is.na(BE_POP_RGN$DESCR_EN))
+
+## .. COMMUNITIES
 ## .. .. define the communities
 dta$COMTY_REFNIS <- dta$RGN_REFNIS
-dta$COMTY_REFNIS[dta$MUNTY_REFNIS %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 99999
-dta$COMTY_DESCR_NL <- dta$RGN_DESCR_NL
-dta$COMTY_DESCR_NL[dta$MUNTY_DESCR_NL %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 'Duitstalige Gemeenschap'
-dta$COMTY_DESCR_FR <- dta$RGN_DESCR_FR
-dta$COMTY_DESCR_FR[dta$MUNTY_DESCR_FR %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 'Communauté germanophone'
+dta$COMTY_REFNIS[dta$MUNTY_REFNIS %in% c(63001,63012,63087,63013,63023,63040,63048,63061,63067)] <- 9999 ## invent code
+
+## .. .. add row to nuts
+colnames(nuts)
+nuts.gc <- tibble(
+  REFNIS = 9999,
+  DESCR_DE = "Deutschsprachige Gemeinschaft",
+  DESCR_EN = "German-speaking Community",
+  DESCR_FR = 'Communauté germanophone',
+  DESCR_NL = 'Duitstalige Gemeenschap'
+)
+nuts <- bind_rows(nuts, nuts.gc)
 
 ## .. .. aggregate by new community levels
 COMTY_age_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR + SEX + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + COMTY_REFNIS + SEX + AGE + AGE5 + AGE10,
   FUN = sum
 )
 
 COMTY_age <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + COMTY_REFNIS + RGN_DESCR_NL + COMTY_DESCR_FR + AGE + AGE5 + AGE10,
+  POPULATION ~ YEAR + COMTY_REFNIS + AGE + AGE5 + AGE10,
   FUN = sum
 )
 COMTY_age$SEX <- "MF"
 
 COMTY_sex <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR + SEX,
+  POPULATION ~ YEAR + COMTY_REFNIS + SEX,
   FUN = sum
 )
 COMTY_sex$AGE <- "ALL"
@@ -401,7 +404,7 @@ COMTY_sex$AGE10 <- "ALL"
 
 COMTY <- aggregate(
   data = dta,
-  POPULATION ~ YEAR + COMTY_REFNIS + COMTY_DESCR_NL + COMTY_DESCR_FR,
+  POPULATION ~ YEAR + COMTY_REFNIS,
   FUN = sum
 )
 COMTY$SEX <- "MF"
@@ -410,6 +413,11 @@ COMTY$AGE5 <- "ALL"
 COMTY$AGE10 <- "ALL"
 
 BE_POP_COMTY <- bind_rows(COMTY, COMTY_age, COMTY_age_sex, COMTY_sex)
+BE_POP_COMTY <- rename(BE_POP_COMTY, REFNIS = COMTY_REFNIS)
+
+## .. .. map description
+BE_POP_COMTY <- left_join(BE_POP_COMTY, nuts, by = "REFNIS")
+sum(is.na(BE_POP_COMTY$DESCR_EN))
 
 ## .. BEL
 be_age_sex <- aggregate(
@@ -445,16 +453,22 @@ be$AGE5 <- "ALL"
 be$AGE10 <- "ALL"
 
 BE_POP <- bind_rows(be, be_age, be_age_sex, be_sex)
+BE_POP$REFNIS <- 100
+BE_POP$DESCR_DE <- "Belgien"
+BE_POP$DESCR_EN <- "Belgium"
+BE_POP$DESCR_NL <- "België"
+BE_POP$DESCR_FR <- "Belgique"
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## SAVE DATA ####
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## check if aggregation was correct (all number should be the same)
-aggregate(be, POPULATION ~ YEAR, FUN = sum) # reference
-aggregate(munty, POPULATION ~ YEAR, FUN = sum)
-aggregate(prov, POPULATION ~ YEAR, FUN = sum)
-aggregate(rgn, POPULATION ~ YEAR, FUN = sum)
-aggregate(COMTY, POPULATION ~ YEAR, FUN = sum)
+be %>% group_by(YEAR) %>% summarise(POPULATION = sum(POPULATION))
+arrd %>% group_by(YEAR) %>% summarise(POPULATION = sum(POPULATION))
+COMTY %>% group_by(YEAR) %>% summarise(POPULATION = sum(POPULATION))
+munty %>% group_by(YEAR) %>% summarise(POPULATION = sum(POPULATION))
+rgn %>% group_by(YEAR) %>% summarise(POPULATION = sum(POPULATION))
+
 
 ## save the results
 saveRDS(BE_POP, "inst/extdata/BE_POP.rds")

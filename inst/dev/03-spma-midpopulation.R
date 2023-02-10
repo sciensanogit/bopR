@@ -19,8 +19,8 @@ ls <-
              pattern = "BE_POP",
              full.names = TRUE)
 
-BE_POP <- sapply(ls, readRDS)
-names(BE_POP) <- tools::file_path_sans_ext(basename(names(BE_POP)))
+BE_POP <- lapply(ls, readRDS)
+names(BE_POP) <- tools::file_path_sans_ext(basename((ls)))
 
 ## loop over all datasets and calculate mid-year population
 ## e.g. midyear 2020 = mean(2020, 2021)
@@ -28,7 +28,7 @@ names(BE_POP) <- tools::file_path_sans_ext(basename(names(BE_POP)))
 SPMA <- list()
 
 for (i in seq_along(BE_POP)) {
-  print(paste0(i,"/",length(BE_POP)))
+  # print(paste0(i,"/",length(BE_POP)))
   ## get min and max year
   y.min <- min(as.numeric(BE_POP[[i]]$YEAR))
   y.max <- max(as.numeric(BE_POP[[i]]$YEAR))
@@ -38,7 +38,13 @@ for (i in seq_along(BE_POP)) {
     tmp.y <- subset(BE_POP[[i]], YEAR == c(y))
     tmp.yplus1 <- subset(BE_POP[[i]], YEAR == c(y+1))
     ## merge both datasets
-    tmp.merge <- full_join(tmp.y, select(tmp.yplus1, -YEAR), by = c("SEX", "AGE", "AGE5", "AGE10"))
+    tmp.merge <- full_join(tmp.y, select(tmp.yplus1, -YEAR),
+                           by = c("REFNIS" ,"SEX", "AGE", "AGE5", "AGE10", "DESCR_DE",
+                                  "DESCR_EN", "DESCR_FR", "DESCR_NL"))
+    tmp.merge$YEAR <- y
+    tmp.merge$POPULATION.x[is.na(tmp.merge$POPULATION.x)] <- 0
+    tmp.merge$POPULATION.y[is.na(tmp.merge$POPULATION.y)] <- 0
+
     tmp.merge <- tmp.merge %>%
       rowwise() %>%
       mutate(POPULATION = mean(POPULATION.x, POPULATION.y)) %>%
@@ -53,12 +59,11 @@ for (i in seq_along(BE_POP)) {
   }
 }
 
-## save as global environment
-list2env(dta,globalenv())
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## SAVE the result ####
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## save data into package data
-usethis::use_data(BE_POP, BE_POP_COMTY, BE_POP_MUNTY, BE_POP_PROJ,
-                  BE_POP_PROJ_ARRD, BE_POP_PROJ_COMTY, BE_POP_PROJ_PROV,
-                  BE_POP_PROJ_RGN, BE_POP_PROV, BE_POP_RGN,
-                  overwrite = TRUE,
-                  compress = "xz", version = 2)
+saveRDS(BE_POP, "inst/extdata/BELPOPLIST.rds")
+saveRDS(SPMA, "inst/extdata/SPMALIST.rds")
+
+

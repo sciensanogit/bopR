@@ -3,10 +3,17 @@
 \docType{data}
 \name{BE_POP}
 \alias{BE_POP}
+\alias{SPMA}
 \alias{BE_POP_MUNTY}
+\alias{BE_POP_COMTY}
 \alias{BE_POP_ARRD}
 \alias{BE_POP_PROV}
 \alias{BE_POP_RGN}
+\alias{SPMA_MUNTY}
+\alias{SPMA_COMTY}
+\alias{SPMA_ARRD}
+\alias{SPMA_PROV}
+\alias{SPMA_RGN}
 \title{Population datasets by location, sex and age within Belgium extracted from Open Data at Statistics Belgium.}
 \source{
 \url{https://statbel.fgov.be/en/themes/population}
@@ -16,6 +23,7 @@ Population datasets by location, sex and age within Belgium extracted from Open 
 
 \itemize{
 \item BE_POP_MUNTY: data.frame with data at the level of the municipality
+\item BE_POP_COMTY: data.frame with data at the level of the community
 \item BE_POP_ARRD: data.frame with data at the level of the district
 \item BE_POP_PROV: data.frame with data at the level of the province
 \item BE_POP_RGN: data.frame with data at the level of the region
@@ -23,22 +31,14 @@ Population datasets by location, sex and age within Belgium extracted from Open 
 }
 
 Mark that Brussels is not considered as a province but for convenience, the province level of Brussels is set to the region information.
-For the municipality level, some of the names and NIS-codes are marked as unknown (NIS = 99999).
 
 The data contains the following elements which were available at different levels.
 \itemize{
-\item CD_MUNTY_REFNIS: NIS-code for Municipality (!!CAUTION: 99999 indicates the NIS is unknown)
-\item TX_MUNTY_DESCR_NL: name of the municipality (dutch)
-\item TX_MUNTY_DESCR_FR: name of the municipality (french)
-\item CD_ARRD_REFNIS: NIS-code for District (Arrondissement)
-\item TX_ARRD_DESCR_NL: name of the district (dutch)
-\item TX_ARRD_DESCR_FR: name of the district (french)
-\item CD_PROV_REFNIS: NIS-code for Province
-\item TX_PROV_DESCR_NL: name of the province (dutch)
-\item TX_PROV_DESCR_FR: name of the province (french)
-\item CD_RGN_REFNIS: NIS-code for Region
-\item TX_RGN_DESCR_NL: name of the province (dutch)
-\item TX_RGN_DESCR_FR: name of the province (french)
+\item REFNIS: NIS-code for then region
+\item DESCR_DE: description of the region in German
+\item DESCR_NL: description of the region in Dutch
+\item DESCR_EN: description of the region in English
+\item DESCR_FR: description of the region in French
 \item YEAR: Population reference year on the 1st of January
 \item SEX: Sex of the population subgroup ("M" for men, "F" for women and "MF" for both)
 \item AGE: Age of the population subgroup (exact age)
