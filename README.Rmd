@@ -32,13 +32,58 @@ devtools::install_github("sciensanogit/bopR")
 
 ## Population datasets
 
-the `bopR` package contains population files on different geographical levels (municipalities - districts - provinces -  regions - country). The datasets are named as follows:
+`bopR` stands for Belgian open population repository, as it makes Belgian population data available in R. The `bopR` package contains population files on different geographical levels (municipalities - districts - provinces -  regions - communities - country). Herefore, `bopR` includes datasets on the structure of the population based on the national registries, and datasets on demographic projections. Herefore, `bopR` relies on the open data that is available at Statistics Belgium (Statbel) and the Federal Plan Bureau. In addition, the `bopR` package also includes midpopulation data as calculated in the framework of the Standard Population Mortality Analysis (SPMA), as developed by Sciensano.
+
+### Statbel
+
+Datasets from Statbel are derived from the Statbel's OPEN DATA repositories. In the `bopR` package they are called as follows:
 
 * *BE_POP_MUNTY*: municipalities
 * *BE_POP_ARRD*: districts
 * *BE_POP_PROV*: provinces (+ Brussels Capital Region for simplicity)
 * *BE_POP_RGN*: regions
+* *BE_POP_COMTY*: communities
 * *BE_POP*: country
+
+```{r, echo = FALSE}
+library(ggplot2)
+data("BE_POP")
+dta <- aggregate(
+  data = subset(BE_POP, subset = SEX == "MF" & AGE == "ALL"),
+  POPULATION ~ YEAR,
+  FUN = sum)
+
+ggplot(data = dta) +
+  geom_line(aes(x = as.numeric(YEAR), y = POPULATION)) +
+  ylim(0,14000000) +
+  theme_bw()
+```
+
+### Federal Planning bureau
+
+Datasets from Statbel are derived from the Federal Planning Bureau repositories. In the `bopR` package they are called as follows:
+
+* *BE_POP_PROJ_MUNTY*: municipalities
+* *BE_POP_PROJ_ARRD*: districts
+* *BE_POP_PROJ_PROV*: provinces (+ Brussels Capital Region for simplicity)
+* *BE_POP_PROJ_RGN*: regions
+* *BE_POP_PROJ_COMTY*: communities
+* *BE_POP_PROJ*: country
+
+```{r, echo = FALSE}
+library(ggplot2)
+data("BE_POP_PROJ")
+dta <- aggregate(
+  data = subset(BE_POP_PROJ, subset = SEX == "MF" & AGE == "ALL"),
+  POPULATION ~ YEAR,
+  FUN = sum)
+
+ggplot(data = dta) +
+  geom_line(aes(x = as.numeric(YEAR), y = POPULATION)) +
+  ylim(0,14000000) +
+  theme_bw()
+```
+
 
 for more information on the content of each dataset, you can always consult the help-file by `?BE_POP`. The population structure of Belgium over the years was as follows:
 
