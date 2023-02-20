@@ -1,7 +1,7 @@
 #' @name BE_POP
 #' @aliases SPMA BE_POP_MUNTY BE_POP_COMTY BE_POP_ARRD BE_POP_PROV BE_POP_RGN SPMA_MUNTY SPMA_COMTY SPMA_ARRD SPMA_PROV SPMA_RGN
-#' @title Population datasets by location, sex and age within Belgium extracted from Open Data at Statistics Belgium.
-#' @description Population datasets by location, sex and age within Belgium extracted from Open Data at Statistics Belgium. Namely:
+#' @title Population data by location, sex and age for Belgium extracted from the Open Data provided by Statistics Belgium.
+#' @description Population data by location, sex and age for Belgium extracted from the Open Data provided by Statistics Belgium. Namely:
 #'
 #' \itemize{
 #' \item BE_POP_MUNTY: data.frame with data at the level of the municipality
@@ -12,9 +12,20 @@
 #' \item BE_POP: data.frame with data at the level of the whole of Belgium
 #' }
 #'
-#' Mark that Brussels is not considered as a province but for convenience, the province level of Brussels is set to the region information.
+#' Note that Brussels is not considered as a province, but for convenience the province level of Brussels is set to the region information.
+#' In addition, the midpopulations for each of the available years were calculated as the average between year i and year i+1 for year i.
+#' These datasets are included under the name SPMA:
 #'
-#' The data contains the following elements which were available at different levels.
+#' \itemize{
+#' \item SPMA_MUNTY: data.frame with data at the level of the municipality
+#' \item SPMA_COMTY: data.frame with data at the level of the community
+#' \item SPMA_ARRD: data.frame with data at the level of the district
+#' \item SPMA_PROV: data.frame with data at the level of the province
+#' \item SPMA_RGN: data.frame with data at the level of the region
+#' \item SPMA: data.frame with data at the level of the whole of Belgium
+#' }
+#'
+#' All the datasets contain the following variables:
 #' \itemize{
 #' \item REFNIS: NIS-code for then region
 #' \item DESCR_DE: description of the region in German
@@ -23,10 +34,10 @@
 #' \item DESCR_FR: description of the region in French
 #' \item YEAR: Population reference year on the 1st of January
 #' \item SEX: Sex of the population subgroup ("M" for men, "F" for women and "MF" for both)
-#' \item AGE: Age of the population subgroup (exact age)
-#' \item AGE5: Age of the population subgroup (by 5-year age band)
-#' \item AGE10: Age of the population subgroup (by 10-year age band)
-#' \item POPULATION: Number of inhabitants in Belgium on the 1st of January
+#' \item AGE: Age of the population subgroup (exact age with "ALL" for the aggregated level)
+#' \item AGE5: Age of the population subgroup (by 5-year age band with "ALL" for the aggregated level)
+#' \item AGE10: Age of the population subgroup (by 10-year age band with "ALL" for the aggregated level)
+#' \item POPULATION: Number of inhabitants in Belgium on the 1st of January of the respective year.
 #' }
 #'
 #' @docType data
@@ -42,8 +53,8 @@ NULL
 
 #' @name BE_POP_PROJ
 #' @aliases SPMA_PROJ BE_POP_PROJ_ARRD BE_POP_PROJ_COMTY BE_POP_PROJ_PROV BE_POP_PROJ_RGN SPMA_PROJ_ARRD SPMA_PROJ_COMTY SPMA_PROJ_PROV SPMA_PROJ_RGN
-#' @title Population projections by location, sex and age within Belgium extracted from Open Data at Planbureau Belgium.
-#' @description Population projections by location, sex and age within Belgium extracted from Open Data at Planbureau Belgium.
+#' @title Population projections by location, sex and age for Belgium extracted from the Open Data by the Federal Planning Bureau Belgium.
+#' @description Population projections by location, sex and age for Belgium extracted from the Open Data by the Federal Planning Bureau Belgium. Namely:
 #'
 #' \itemize{
 #' \item BE_POP_PROJ_ARRD: data.frame with data at the level of the district
@@ -52,6 +63,19 @@ NULL
 #' \item BE_POP_PROJ_RGN: data.frame with data at the level of the region
 #' \item BE_POP_PROJ: data.frame with data at the level of the whole of Belgium
 #' }
+#'
+#' Note that Brussels is not considered as a province, but for convenience the province level of Brussels is set to the region information.
+#' In addition, the midpopulations for each of the available years were calculated as the average between year i and year i+1 for year i.
+#' These datasets are included under the name SPMA:
+#'
+#' \itemize{
+#' \item SPMA_PROJ_ARRD: data.frame with data at the level of the district
+#' \item SPMA_PROJ_COMTY: data.frame with data at the level of the community
+#' \item SPMA_PROJ_PROV: data.frame with data at the level of the province
+#' \item SPMA_PROJ_RGN: data.frame with data at the level of the region
+#' \item SPMA_PROJ: data.frame with data at the level of the whole of Belgium
+#' }
+#'
 #'
 #' The data contains the following elements which were available at different levels.
 #' \itemize{
@@ -62,10 +86,10 @@ NULL
 #' \item DESCR_FR: description of the region in French
 #' \item YEAR: Population reference year on the 1st of January
 #' \item SEX: Sex of the population subgroup ("M" for men, "F" for women and "MF" for both)
-#' \item AGE: Age of the population subgroup (exact age)
-#' \item AGE5: Age of the population subgroup (by 5-year age band)
-#' \item AGE10: Age of the population subgroup (by 10-year age band)
-#' \item POPULATION: Number of inhabitants in Belgium on the 1st of January
+#' \item AGE: Age of the population subgroup (exact age with "ALL" for the aggregated level)
+#' \item AGE5: Age of the population subgroup (by 5-year age band with "ALL" for the aggregated level)
+#' \item AGE10: Age of the population subgroup (by 10-year age band with "ALL" for the aggregated level)
+#' \item POPULATION: Number of inhabitants in Belgium on the 1st of January of the respective year.
 #' }
 #'
 #' @docType data
@@ -78,13 +102,6 @@ NULL
 #' str(BE_POP_PROJ)
 #' }
 NULL
-
-
-
-
-
-
-
 
 #' @name BE_POP_SECTOR
 #' @aliases

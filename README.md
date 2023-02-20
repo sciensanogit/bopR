@@ -8,7 +8,7 @@
 [![R-CMD-check](https://github.com/sciensanogit/bopR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sciensanogit/bopR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-bopR is the Belgian open population repository for R
+bopR is the **Belgian open population repository for R**.
 
 ## Installation
 
@@ -23,16 +23,13 @@ devtools::install_github("sciensanogit/bopR")
 ## Population datasets
 
 `bopR` stands for Belgian open population repository, as it makes
-Belgian population data available in R. The `bopR` package contains
+Belgian population data directly available in R. The `bopR` package contains
 population files on different geographical levels (municipalities -
-districts - provinces - regions - communities - country). Herefore,
+districts - provinces - regions - communities - country). Therefore,
 `bopR` includes datasets on the structure of the population based on the
-national registries, and datasets on demographic projections. Herefore,
-`bopR` relies on the open data that is available at Statistics Belgium
-(Statbel) and the Federal Plan Bureau. In addition, the `bopR` package
-also includes midpopulation data as calculated in the framework of the
-Standard Population Mortality Analysis (SPMA), as developed by
-Sciensano.
+national registries (Statbel: Statistics Belgium), and datasets on demographic projections (FBP: Federal Planning Bureau, Belgium). To this end, `bopR` relies on the open data that is available at these data provides. 
+In addition, the `bopR` package  includes midpopulation population calculations as calculated in the framework of the
+Standard Population Mortality Analysis (SPMA), developed by Sciensano.
 
 ### Statbel
 

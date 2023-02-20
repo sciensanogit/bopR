@@ -32,6 +32,9 @@ for (i in seq_along(BE_POP)) {
   ## get min and max year
   y.min <- min(as.numeric(BE_POP[[i]]$YEAR))
   y.max <- max(as.numeric(BE_POP[[i]]$YEAR))
+  ## save results
+  tmp <- list()
+
   for (y in y.min:(y.max-1)) {
     print(paste0(i,"/",length(BE_POP), ": year = ",y))
     ## subset subsequent years
@@ -47,16 +50,21 @@ for (i in seq_along(BE_POP)) {
 
     tmp.merge <- tmp.merge %>%
       rowwise() %>%
-      mutate(POPULATION = mean(POPULATION.x, POPULATION.y)) %>%
+      mutate(POPULATION = (POPULATION.x + POPULATION.y)/2) %>%
       ungroup() %>%
     ## remove population.x and population.y
       select(-POPULATION.x, -POPULATION.y)
-    ## save in list
-    ## .. name
-    name.i <- gsub(pattern = "BE_POP", x = names(BE_POP)[i], replacement = "SPMA")
-    ## .. save
-    SPMA[[name.i]] <- tmp.merge
+
+    tmp[[as.character(y)]] <- tmp.merge
+
   }
+  ## list to dataframe
+  tmp <- bind_rows(tmp)
+  ## save in list
+  ## .. name
+  name.i <- gsub(pattern = "BE_POP", x = names(BE_POP)[i], replacement = "SPMA")
+  ## .. save
+  SPMA[[name.i]] <- tmp
 }
 
 ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -65,5 +73,3 @@ for (i in seq_along(BE_POP)) {
 
 saveRDS(BE_POP, "inst/extdata/BELPOPLIST.rds")
 saveRDS(SPMA, "inst/extdata/SPMALIST.rds")
-
-
